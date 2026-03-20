@@ -9,12 +9,36 @@
 </head>
 <body>
 
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Lead<span>Log</span> CRM</div>
+    <p class="login-subtitle">Real Estate Lead Management</p>
+    <div class="login-form">
+      <div class="fg">
+        <label>Username</label>
+        <input type="text" id="login-user" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div id="login-error" class="login-error" style="display:none">Incorrect username or password.</div>
+      <button class="btn btn-primary login-btn" onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP WRAPPER ══ -->
+<div id="app-wrapper" style="display:none">
+
 <!-- ══ HEADER ══ -->
 <div class="header">
   <div class="logo">Lead<span>Log</span> CRM</div>
   <div class="header-actions">
     <span class="hbadge" id="total-badge">52 Leads</span>
     <span style="font-size:12px;color:var(--muted)">Last updated: Mar 2026</span>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()" title="Sign out">⎋ Logout</button>
   </div>
 </div>
 
@@ -234,6 +258,8 @@
 
 <!-- ══ TOAST CONTAINER ══ -->
 <div class="toast-container" id="toast-container"></div>
+
+</div><!-- /app-wrapper -->
 
 <script src="app.js"></script>
 </body>

@@ -1,4 +1,37 @@
 // ════════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════════
+const AUTH_USER = 'admin';
+const AUTH_PASS = 'leadlog2026';
+
+function doLogin(){
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  if(u === AUTH_USER && p === AUTH_PASS){
+    sessionStorage.setItem('leadlog_auth','1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app-wrapper').style.display='block';
+    err.style.display='none';
+    assignColors();populateDropdowns();renderDash();renderTable();
+  } else {
+    err.style.display='block';
+    document.getElementById('login-pass').value='';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('leadlog_auth');
+  document.getElementById('app-wrapper').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('login-user').focus();
+}
+
+// ════════════════════════════════════════════
 //  DATA — DEFAULT LEADS (seeded on first load)
 // ════════════════════════════════════════════
 const DEFAULT_LEADS = [
@@ -621,7 +654,10 @@ function closeModal(id){document.getElementById(id).style.display='none';}
 function closeModalOutside(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 // ════════════ INIT ════════════
-assignColors();
-populateDropdowns();
-renderDash();
-renderTable();
+if(sessionStorage.getItem('leadlog_auth')==='1'){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-wrapper').style.display='block';
+  assignColors();populateDropdowns();renderDash();renderTable();
+} else {
+  document.getElementById('login-user').focus();
+}
