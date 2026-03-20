@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>LeadLog CRM</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="logo">Lead<span>Log</span> CRM</div>
+  <div class="header-actions">
+    <span class="hbadge" id="total-badge">52 Leads</span>
+    <span style="font-size:12px;color:var(--muted)">Last updated: Mar 2026</span>
+  </div>
+</div>
+
+<!-- ══ TABS ══ -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
+  <button class="tab-btn" onclick="showTab('leads',this)">📋 Lead Log</button>
+  <button class="tab-btn" onclick="showTab('analytics',this)">📈 Analytics</button>
+</div>
+
+<div class="main">
+
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<div class="section active" id="tab-dashboard">
+  <div class="filter-bar">
+    <div class="fg"><label>From Date</label><input type="date" id="dash-from" onchange="renderDash()"/></div>
+    <div class="fg"><label>To Date</label><input type="date" id="dash-to" onchange="renderDash()"/></div>
+    <div class="fg"><label>Source</label>
+      <select id="dash-src" onchange="renderDash()">
+        <option value="">All Sources</option>
+      </select>
+    </div>
+    <div class="fg"><label>Month</label>
+      <select id="dash-month" onchange="renderDash()">
+        <option value="">All Months</option>
+      </select>
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="resetFilter('dash')">✕ Reset</button>
+  </div>
+  <div class="kpi-grid" id="kpi-grid"></div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Lead Sources</h3>
+      <div class="chart-wrap" style="height:230px"><canvas id="pieChart"></canvas></div>
+      <div class="legend" id="pie-legend"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Conversion Funnel</h3>
+      <div id="funnel-wrap" style="padding:6px 0"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Leads by Day</h3>
+      <div class="chart-wrap" style="height:210px"><canvas id="barChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Commission by Period</h3>
+      <div class="chart-wrap" style="height:210px"><canvas id="commChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ LEAD LOG ══════════════ -->
+<div class="section" id="tab-leads">
+  <div class="table-toolbar">
+    <div class="table-toolbar-left">
+      <div class="fg search-wrap">
+        <label>Search</label>
+        <span class="search-ico">🔍</span>
+        <input type="text" id="lead-search" placeholder="Name, phone, property…" oninput="renderTable()"/>
+      </div>
+      <div class="fg"><label>Source</label>
+        <select id="lead-src" onchange="renderTable()"><option value="">All</option></select>
+      </div>
+      <div class="fg"><label>Contacted</label>
+        <select id="lead-cont" onchange="renderTable()"><option value="">All</option><option value="Y">Yes</option><option value="N">No</option></select>
+      </div>
+      <div class="fg"><label>Closed</label>
+        <select id="lead-closed" onchange="renderTable()"><option value="">All</option><option value="Y">Yes</option><option value="N">No</option></select>
+      </div>
+      <div class="fg"><label>Month</label>
+        <select id="lead-month" onchange="renderTable()"><option value="">All</option></select>
+      </div>
+      <button class="btn btn-danger btn-sm" style="align-self:flex-end" onclick="resetFilter('lead')">✕ Reset</button>
+    </div>
+    <div class="table-toolbar-right">
+      <button class="btn btn-primary" onclick="openAddModal()">＋ Add Lead</button>
+      <button class="btn btn-warn" onclick="openImportModal()">⬆ Import CSV</button>
+      <button class="btn btn-success" onclick="downloadTemplate()">⬇ Template</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">⬇ Export</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table id="lead-table">
+      <thead>
+        <tr>
+          <th onclick="sortBy('DATE')">Date</th>
+          <th onclick="sortBy('NAME')">Name</th>
+          <th>Phone</th>
+          <th onclick="sortBy('SOURCE')">Source</th>
+          <th>Property</th>
+          <th onclick="sortBy('CONTACTED')">Contacted</th>
+          <th>Appt Set</th>
+          <th>Showing</th>
+          <th>Application</th>
+          <th>Closed</th>
+          <th>Commission</th>
+          <th>Notes</th>
+          <th style="width:80px;text-align:center">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="lead-tbody"></tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <span class="pag-info" id="pag-info"></span>
+    <div class="pag-btns" id="pag-btns"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ANALYTICS ══════════════ -->
+<div class="section" id="tab-analytics">
+  <div class="filter-bar">
+    <div class="fg"><label>From</label><input type="date" id="an-from" onchange="renderAnalytics()"/></div>
+    <div class="fg"><label>To</label><input type="date" id="an-to" onchange="renderAnalytics()"/></div>
+    <button class="btn btn-danger btn-sm" onclick="resetFilter('an')">✕ Reset</button>
+  </div>
+  <div class="analytics-grid">
+    <div class="chart-card full-width">
+      <h3>Commission Earned Over Time</h3>
+      <div class="chart-wrap" style="height:220px"><canvas id="commTimeline"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Source Breakdown</h3>
+      <div class="chart-wrap" style="height:240px"><canvas id="anPie"></canvas></div>
+      <div class="legend" id="an-pie-legend"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Contact Rate by Source</h3>
+      <div class="chart-wrap" style="height:240px"><canvas id="convBySource"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Overall Contact Rate</h3>
+      <div class="chart-wrap" style="height:240px"><canvas id="contactDonut"></canvas></div>
+      <div class="legend" id="contact-legend"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ══ MODAL: ADD LEAD ══ -->
+<div class="modal-backdrop" id="add-modal" style="display:none" onclick="closeModalOutside(event,'add-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>➕ Add New Lead</h2>
+      <button class="modal-close" onclick="closeModal('add-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <span class="form-section-title">Contact Info</span>
+        <div class="fg"><label>Date *</label><input type="date" id="f-date"/></div>
+        <div class="fg"><label>Lead Name *</label><input type="text" id="f-name" placeholder="Full name"/></div>
+        <div class="fg"><label>Phone</label><input type="text" id="f-phone" placeholder="e.g. 832-555-0100"/></div>
+        <div class="fg"><label>Source *</label>
+          <select id="f-source">
+            <option value="">Select source…</option>
+            <option>REFERRAL</option><option>ZILLOW</option><option>FB</option>
+            <option>HAR</option><option>LoopNet</option><option>Crexi</option><option>OTHER</option>
+          </select>
+        </div>
+        <div class="fg span2"><label>Property</label><input type="text" id="f-property" placeholder="e.g. 5718 Eskridge 2beds"/></div>
+
+        <span class="form-section-title">Pipeline Status</span>
+        <div class="fg"><label>Contacted</label>
+          <select id="f-contacted"><option value="">—</option><option value="Y">Yes</option><option value="N">No</option></select>
+        </div>
+        <div class="fg"><label>Appointment Set</label>
+          <select id="f-appt"><option value="">—</option><option value="Y">Yes</option><option value="N">No</option></select>
+        </div>
+        <div class="fg"><label>Showing</label>
+          <select id="f-showing"><option value="">—</option><option value="Y">Yes</option><option value="N">No</option></select>
+        </div>
+        <div class="fg"><label>Application Submitted</label>
+          <select id="f-app"><option value="">—</option><option value="Y">Yes</option><option value="N">No</option></select>
+        </div>
+        <div class="fg"><label>Closed</label>
+          <select id="f-closed"><option value="">—</option><option value="Y">Yes</option><option value="N">No</option></select>
+        </div>
+        <div class="fg"><label>Commission</label><input type="text" id="f-commission" placeholder="e.g. $1,500.00"/></div>
+
+        <span class="form-section-title">Notes</span>
+        <div class="fg span2"><label>Notes</label><textarea id="f-notes" placeholder="Any relevant notes…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLead()">Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: IMPORT CSV ══ -->
+<div class="modal-backdrop" id="import-modal" style="display:none" onclick="closeModalOutside(event,'import-modal')">
+  <div class="modal" style="max-width:740px">
+    <div class="modal-header">
+      <h2>⬆ Import CSV</h2>
+      <button class="modal-close" onclick="closeModal('import-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Upload a CSV file with the same column structure as the template. Duplicate entries (same name + date) will be skipped. <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="downloadTemplate()">Download template ↓</span></p>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()">
+        <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileInput(event)"/>
+        <div class="drop-zone-icon">📂</div>
+        <p><strong>Click to browse</strong> or drag &amp; drop your CSV file here</p>
+        <p style="font-size:12px;margin-top:4px">Supported format: .csv — UTF-8 encoded</p>
+      </div>
+      <div id="import-status-wrap"></div>
+      <div id="import-preview-wrap"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('import-modal')">Cancel</button>
+      <button class="btn btn-primary" id="import-confirm-btn" style="display:none" onclick="confirmImport()">Import Leads</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST CONTAINER ══ -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
